@@ -8,7 +8,8 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinxSerialization)
-    alias(libs.plugins.realm.plugin)
+    alias(libs.plugins.sqlDelight)
+//    alias(libs.plugins.realmPlugin)
 }
 
 kotlin {
@@ -36,8 +37,12 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
 
+            implementation(libs.koin.android)
+
             implementation(libs.ktor.client.android)
+            implementation(libs.sql.android.driver)
         }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -63,13 +68,18 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.multiplatform.settings.coroutines)
 
-            implementation(libs.mongodb.realm)
+            implementation(libs.sql.coroutines.extensions)
+
+            implementation(libs.reactivecircus.cache4k)
+
             implementation(libs.kotlin.coroutines)
             implementation(libs.stately.common)
+//            implementation(libs.mongodb.realm)
         }
 
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sql.native.driver)
         }
     }
 }
@@ -108,6 +118,14 @@ android {
     }
     dependencies {
         debugImplementation(compose.uiTooling)
+    }
+}
+
+sqldelight {
+    databases {
+        create(name = "CurrencyDatabase") {
+            packageName.set("com.fetocan.currency.data.db")
+        }
     }
 }
 

@@ -7,5 +7,6 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinxSerialization)
-    alias(libs.plugins.realm.plugin)
+    alias(libs.plugins.sqlDelight) apply false
+//    alias(libs.plugins.realmPlugin)
 }

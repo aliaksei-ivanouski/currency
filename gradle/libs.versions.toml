@@ -23,6 +23,8 @@ mongodb-realm = "2.1.0"
 kotlin-coroutines = "1.9.0-RC.2"
 stately-common = "2.0.7"
 realm-plugin = "2.1.0"
+reactivecircus-cache4k = "0.13.0"
+sqlDelight = "2.0.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -44,6 +46,7 @@ voyager-screen-model = { module = "cafe.adriel.voyager:voyager-screenmodel", ver
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager-navigator" }
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager-navigator" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-core" }
 
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
@@ -53,12 +56,20 @@ ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "k
 
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "date-time" }
 
-mongodb-realm = { module = "io.realm.kotlin:library-base", version.ref = "mongodb-realm" }
+sql-coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelight" }
+sql-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqlDelight" }
+sql-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
+
+reactivecircus-cache4k = { module = "io.github.reactivecircus.cache4k:cache4k", version.ref = "reactivecircus-cache4k" }
+
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 stately-common = { module = "co.touchlab:stately-common", version.ref = "stately-common" }
 
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatform-settings" }
+
+#mongodb-realm = { module = "io.realm.kotlin:library-base", version.ref = "mongodb-realm" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -66,5 +77,8 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-realm-plugin = { id = "io.realm.kotlin", version.ref = "realm-plugin" }
+sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
+
+#realmPlugin = { id = "io.realm.kotlin", version.ref = "realm-plugin" }

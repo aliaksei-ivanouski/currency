@@ -1,0 +1,15 @@
+CREATE TABLE Currency (
+    code TEXT NOT NULL,
+    value REAL NOT NULL
+);
+
+insertCurrency:
+INSERT INTO Currency(code, value)
+VALUES(?, ?);
+
+selectAllCurrencies:
+SELECT *
+FROM Currency;
+
+removeAllCurrencies:
+DELETE FROM Currency;
