@@ -4,6 +4,7 @@ import com.fetocan.currency.data.domain.CurrencyRepository
 import com.fetocan.currency.data.domain.model.RequestState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.Serializable
 
 class CurrencyRepositoryImpl(
     private val database: CurrencyDatabase?
@@ -51,3 +52,9 @@ class CurrencyRepositoryImpl(
         value
     )
 }
+
+@Serializable
+data class CurrencyRaw(
+    val code: String,
+    val value: Double
+)

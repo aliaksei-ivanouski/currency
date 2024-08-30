@@ -1,7 +1,7 @@
 package com.fetocan.currency.data.local
 
+import com.fetocan.currency.data.db.CurrencyRaw
 import com.fetocan.currency.data.domain.LocalCacheRepository
-import com.fetocan.currency.data.domain.model.Currency
 import com.fetocan.currency.data.domain.model.RequestState
 import io.github.reactivecircus.cache4k.Cache
 import kotlinx.coroutines.flow.Flow
@@ -11,21 +11,19 @@ import kotlin.uuid.Uuid
 
 class Cache4kImpl: LocalCacheRepository {
 
-    val cache = Cache.Builder<String, Currency>().build()
+    val cache = Cache.Builder<String, CurrencyRaw>().build()
 
     override fun configureTheRealm() {
         TODO("Not yet implemented")
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun insertCurrencyData(currency: Currency) {
+    override suspend fun insertCurrencyData(currency: CurrencyRaw) {
         cache.put(Uuid.random().toString(), currency)
     }
 
-    override fun readCurrencyData(): Flow<RequestState<List<Currency>>> {
-        return flow {
-            RequestState.Success(data = cache.asMap().values.toList())
-        }
+    override fun readCurrencyData(): RequestState<List<CurrencyRaw>> {
+        return RequestState.Success(data = cache.asMap().values.toList())
     }
 
     override suspend fun cleanUp() {

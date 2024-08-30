@@ -29,4 +29,9 @@ data class MetaData(
 open class Currency {
     var code: String = ""
     var value: Double = 0.0
+
+    constructor(code: String, value: Double) {
+        this.code = code
+        this.value = value
+    }
 }
