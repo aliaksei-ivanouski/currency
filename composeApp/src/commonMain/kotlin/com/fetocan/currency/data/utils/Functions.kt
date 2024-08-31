@@ -1,8 +1,24 @@
 package com.fetocan.currency.data.utils
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.FontFamily
+import currency.composeapp.generated.resources.Res
+import currency.composeapp.generated.resources.bebas_neue_regular
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
+
+fun calculateExchangeRate(
+    source: Double,
+    target: Double
+): Double = target / source
+
+fun convert(
+    amount: Double,
+    exchangeRate: Double
+): Double = amount * exchangeRate
 
 fun displayCurrentDateTime(): String {
     val currentTimestamp = Clock.System.now()
@@ -24,3 +40,7 @@ fun displayCurrentDateTime(): String {
     
     return "$dayOfMonth$suffix $month, $year"
 }
+
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+fun GetBebasFontFamily() = FontFamily(Font(Res.font.bebas_neue_regular))

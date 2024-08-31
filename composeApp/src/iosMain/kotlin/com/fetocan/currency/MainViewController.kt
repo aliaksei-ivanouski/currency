@@ -6,10 +6,11 @@ import com.fetocan.currency.di.databaseModule
 import org.koin.core.context.startKoin
 
 fun MainViewController() = ComposeUIViewController {
+    App()
+}
 
+fun initializeKoin() {
     startKoin {
         modules(appModule + databaseModule)
     }
-
-    App()
 }

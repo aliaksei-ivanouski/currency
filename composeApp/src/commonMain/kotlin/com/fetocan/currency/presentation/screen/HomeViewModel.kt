@@ -102,6 +102,7 @@ class HomeViewModel(
                 ?.takeIf { it.isNotEmpty() }
                 ?.also { currencyRaw ->
                     println("HomeViewModel: DATABASE IS FULL")
+                    _allCurrencies.clear()
                     _allCurrencies.addAll(currencyRaw)
                     if (!preferences.isDataFresh(Clock.System.now().toEpochMilliseconds())) {
                         println("HomeViewModel: DATA NOT FRESH")
@@ -126,6 +127,7 @@ class HomeViewModel(
                 repository.insertCurrency(CurrencyRaw(it.code, it.value))
             }
             println("HomeViewModel: UPDATING ALL CURRENCIES")
+            _allCurrencies.clear()
             _allCurrencies.addAll(
                 fetchedData.getSuccessData().map { CurrencyRaw(it.code, it.value) }
             )

@@ -19,6 +19,7 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import com.fetocan.currency.data.domain.model.CurrencyType
 import com.fetocan.currency.data.ui.surfaceColor
 import com.fetocan.currency.presentation.component.CurrencyPickerDialog
+import com.fetocan.currency.presentation.component.HomeBody
 import com.fetocan.currency.presentation.component.HomeHeader
 
 class HomeScreen: Screen {
@@ -90,9 +91,11 @@ class HomeScreen: Screen {
                 }
             )
 
-            Spacer(modifier = Modifier.padding(top = 24.dp))
-            Text(
-                text = "To Be Defined"
+//            Spacer(modifier = Modifier.padding(top = 24.dp))
+            HomeBody(
+                source = sourceCurrency,
+                target = targetCurrency,
+                amount = amount
             )
         }
     }

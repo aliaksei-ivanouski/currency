@@ -34,6 +34,7 @@ import com.fetocan.currency.data.domain.model.RequestState
 import com.fetocan.currency.data.ui.headerColor
 import com.fetocan.currency.data.ui.staleColor
 import com.fetocan.currency.data.utils.displayCurrentDateTime
+import com.fetocan.currency.getPlatform
 import currency.composeapp.generated.resources.Res
 import currency.composeapp.generated.resources.exchange_illustration
 import currency.composeapp.generated.resources.refresh_ic
@@ -57,6 +58,7 @@ fun HomeHeader(
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
             .background(headerColor)
+            .padding(top = if (getPlatform().name == "Android") 0.dp else 24.dp)
             .padding(all = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
