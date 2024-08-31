@@ -11,6 +11,5 @@ fun createDatabase(
 ): CurrencyDatabase {
     val driver = driverFactory.createDriver()
     val database = CurrencyDatabase(driver)
-
     return database // Do more work with the database (see below).
 }
