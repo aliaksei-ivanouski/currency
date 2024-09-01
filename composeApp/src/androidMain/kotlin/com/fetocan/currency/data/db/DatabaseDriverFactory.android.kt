@@ -8,6 +8,6 @@ actual class DriverFactory(
     private val context: Context
 ) {
     actual fun createDriver(): SqlDriver {
-        return AndroidSqliteDriver(CurrencyDatabase.Schema, context, "currency_db")
+        return AndroidSqliteDriver(CurrencyDatabase.Schema, context, DATABASE_NAME)
     }
 }
