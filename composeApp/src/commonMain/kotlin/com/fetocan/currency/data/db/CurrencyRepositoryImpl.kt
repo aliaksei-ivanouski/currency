@@ -2,26 +2,26 @@ package com.fetocan.currency.data.db
 
 import com.fetocan.currency.data.domain.CurrencyRepository
 import com.fetocan.currency.data.domain.model.RequestState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 
 class CurrencyRepositoryImpl(
-    private val database: CurrencyDatabase?
+    private val database: CurrencyDatabase
 ) : CurrencyRepository {
 
     override suspend fun getAllCurrency(): RequestState<List<CurrencyRaw>> =
-        RequestState.Success(
-            data = database?.currencyDatabaseQueries
-                ?.selectAllCurrencies(::mapToCurrencyRaw)
-                ?.executeAsList()
-                ?: listOf()
+        runCatching {
+            database.currencyDatabaseQueries
+                .selectAllCurrencies(::mapToCurrencyRaw)
+                .executeAsList()
+        }.fold(
+            onSuccess = { RequestState.Success(data = it) },
+            onFailure = { RequestState.Error(it.message ?: "Unable to read currencies") }
         )
 
     override suspend fun insertCurrencies(
         currencies: List<CurrencyRaw>
     ) {
-        database?.currencyDatabaseQueries?.transaction {
+        database.currencyDatabaseQueries.transaction {
             currencies.forEach { currencyRaw ->
                 database.currencyDatabaseQueries.insertCurrency(
                     currencyRaw.code,
@@ -34,14 +34,14 @@ class CurrencyRepositoryImpl(
     override suspend fun insertCurrency(
         currencyRaw: CurrencyRaw
     ) {
-        database?.currencyDatabaseQueries?.insertCurrency(
+        database.currencyDatabaseQueries.insertCurrency(
             currencyRaw.code,
             currencyRaw.value
         )
     }
 
     override suspend fun clearCurrencies() {
-        database?.currencyDatabaseQueries?.removeAllCurrencies()
+        database.currencyDatabaseQueries.removeAllCurrencies()
     }
 
     private fun mapToCurrencyRaw(

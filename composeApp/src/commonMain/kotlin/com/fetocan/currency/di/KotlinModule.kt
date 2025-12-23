@@ -19,7 +19,7 @@ val appModule = module {
 //    single<LocalCacheRepository> { MongoImpl() }
 
     single { platformCurrencyApiConfig() }
-    single<CurrencyRepository> { CurrencyRepositoryImpl(database = getOrNull()) }
+    single<CurrencyRepository> { CurrencyRepositoryImpl(database = get()) }
 
     single<PreferencesRepository> { PreferencesImpl(settings = get()) }
     single<CurrencyApiService> {
