@@ -26,9 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.fetocan.currency.data.db.CurrencyRaw
@@ -284,19 +288,12 @@ fun AmountInput(
             .height(54.dp),
         value = amountText,
         onValueChange = { newValue ->
-            val filtered = newValue.filter { it.isDigit() || it == '.' }
-            val decimalsAllowed = filtered.count { it == '.' } <= 1
-
-            val normalized = when {
-                filtered.isEmpty() -> ""
-                filtered.startsWith("0") && filtered.length > 1 && filtered[1] != '.' -> filtered.trimStart('0').ifEmpty { "0" }
-                else -> filtered
-            }
-            val limitReached = normalized.replace(".", "").length > 15
-            if (decimalsAllowed && !limitReached) {
-                onAmountChange(normalized)
+            val sanitized = sanitizeAmountInput(newValue)
+            if (sanitized != null) {
+                onAmountChange(sanitized)
             }
         },
+        visualTransformation = AmountVisualTransformation,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White.copy(alpha = 0.05f),
             unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
@@ -333,5 +330,96 @@ fun AmountInput(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Decimal
         )
+    )
+}
+
+private fun sanitizeAmountInput(rawInput: String): String? {
+    val filtered = rawInput.filter { it.isDigit() || it == '.' }
+    val dotCount = filtered.count { it == '.' }
+    if (dotCount > 1) return null
+
+    val normalized = when {
+        filtered.isEmpty() -> ""
+        filtered.startsWith("0") && filtered.length > 1 && filtered[1] != '.' -> filtered.trimStart('0').ifEmpty { "0" }
+        else -> filtered
+    }
+
+    val limitReached = normalized.replace(".", "").length > 15
+    return if (limitReached) null else normalized
+}
+
+private object AmountVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val original = text.text
+        if (original.isEmpty()) {
+            return TransformedText(AnnotatedString(""), OffsetMapping.Identity)
+        }
+
+        val dotIndex = original.indexOf('.')
+        val intEnd = if (dotIndex == -1) original.length else dotIndex
+        val integerPart = original.substring(0, intEnd)
+        val fractionalPart = if (dotIndex == -1) "" else original.substring(dotIndex)
+
+        val grouped = groupInteger(integerPart)
+        val transformedText = grouped.grouped + fractionalPart
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                return if (offset <= intEnd) offset + grouped.commasBefore[offset]
+                else offset + grouped.commasBefore[intEnd]
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                val groupLen = grouped.grouped.length
+                return if (offset <= groupLen) {
+                    grouped.transformedToOriginal[offset]
+                } else {
+                    val extra = offset - groupLen
+                    grouped.transformedToOriginal[groupLen] + extra
+                }
+            }
+        }
+
+        return TransformedText(AnnotatedString(transformedText), offsetMapping)
+    }
+
+    private fun groupInteger(integerPart: String): GroupResult {
+        if (integerPart.isEmpty()) {
+            val commasBefore = IntArray(1)
+            val mapping = IntArray(1)
+            return GroupResult("", commasBefore, mapping)
+        }
+        val length = integerPart.length
+        val commasBefore = IntArray(length + 1)
+        val transformedList = mutableListOf<Int>()
+        val builder = StringBuilder()
+        var digitsProcessed = 0
+        var commasInserted = 0
+        for (offset in 0..length) {
+            commasBefore[offset] = commasInserted
+            if (offset == length) break
+            val char = integerPart[offset]
+            builder.append(char)
+            transformedList.add(offset)
+            digitsProcessed++
+            val remaining = length - digitsProcessed
+            if (remaining > 0 && remaining % 3 == 0) {
+                builder.append(',')
+                transformedList.add(offset)
+                commasInserted++
+            }
+        }
+        val transformedToOriginal = IntArray(transformedList.size + 1)
+        for (i in transformedList.indices) {
+            transformedToOriginal[i] = transformedList[i]
+        }
+        transformedToOriginal[transformedList.size] = length
+        return GroupResult(builder.toString(), commasBefore, transformedToOriginal)
+    }
+
+    private data class GroupResult(
+        val grouped: String,
+        val commasBefore: IntArray,
+        val transformedToOriginal: IntArray
     )
 }
