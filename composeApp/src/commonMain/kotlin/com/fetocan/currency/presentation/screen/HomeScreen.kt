@@ -29,7 +29,7 @@ class HomeScreen: Screen {
         val targetCurrency by viewModel.targetCurrency
         val refreshState by viewModel.refreshState
 
-        var amount by rememberSaveable { mutableStateOf(0.0) }
+        var amountText by rememberSaveable { mutableStateOf("0") }
 
         var selectedCurrencyType: CurrencyType by remember {
             mutableStateOf(CurrencyType.None)
@@ -74,8 +74,8 @@ class HomeScreen: Screen {
                 source = sourceCurrency,
                 target = targetCurrency,
                 refreshState = refreshState,
-                amount = amount,
-                onAmountChange = { amount = it },
+                amountText = amountText,
+                onAmountChange = { amountText = it },
                 onRatesRefresh = {
                     viewModel.sendEvent(
                         HomeUiEvent.RefreshRates
@@ -94,7 +94,7 @@ class HomeScreen: Screen {
             HomeBody(
                 source = sourceCurrency,
                 target = targetCurrency,
-                amount = amount
+                amount = amountText.toDoubleOrNull() ?: 0.0
             )
         }
     }
