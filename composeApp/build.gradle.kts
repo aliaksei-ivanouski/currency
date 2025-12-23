@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,6 +12,15 @@ plugins {
     alias(libs.plugins.sqlDelight)
 //    alias(libs.plugins.realmPlugin)
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+val currencyApiKey = localProperties.getProperty("currencyApiKey") ?: ""
+val currencyApiEndpoint = "https://api.currencyapi.com/v3/latest"
 
 kotlin {
     androidTarget {
@@ -98,6 +108,16 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField(
+            "String",
+            "CURRENCY_API_ENDPOINT",
+            "\"$currencyApiEndpoint\""
+        )
+        buildConfigField(
+            "String",
+            "CURRENCY_API_KEY",
+            "\"${currencyApiKey.replace("\"", "\\\"")}\""
+        )
     }
     packaging {
         resources {
@@ -115,6 +135,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     dependencies {
         debugImplementation(compose.uiTooling)
@@ -128,4 +149,3 @@ sqldelight {
         }
     }
 }
-

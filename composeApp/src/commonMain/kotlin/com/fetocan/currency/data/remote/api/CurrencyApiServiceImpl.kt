@@ -18,12 +18,9 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class CurrencyApiServiceImpl(
-    private val preferences: PreferencesRepository
-): CurrencyApiService {
-    companion object {
-        const val ENDPOINT = "https://api.currencyapi.com/v3/latest"
-        const val API_KEY = "cur_live_sLmy1WmIqez1BZrMVEfY1cJEWVCV2XsZD35e5o3Z"
-    }
+    private val preferences: PreferencesRepository,
+    private val config: CurrencyApiConfig
+) : CurrencyApiService {
 
     private val httpClient = HttpClient {
         install(ContentNegotiation) {
@@ -38,14 +35,14 @@ class CurrencyApiServiceImpl(
         }
         install(DefaultRequest) {
             headers {
-                header("apiKey", API_KEY)
+                header("apiKey", config.apiKey)
             }
         }
     }
 
     override suspend fun getLatestExchangeRates(): RequestState<List<Currency>> {
         return try {
-            val response = httpClient.get(ENDPOINT)
+            val response = httpClient.get(config.endpoint)
             if (response.status.value == 200) {
                 val apiResponse = Json.decodeFromString<ApiResponse>(response.body())
                 

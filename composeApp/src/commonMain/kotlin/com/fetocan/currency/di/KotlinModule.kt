@@ -8,6 +8,7 @@ import com.fetocan.currency.data.domain.PreferencesRepository
 import com.fetocan.currency.data.local.Cache4kImpl
 import com.fetocan.currency.data.local.PreferencesImpl
 import com.fetocan.currency.data.remote.api.CurrencyApiServiceImpl
+import com.fetocan.currency.data.remote.api.platformCurrencyApiConfig
 import com.fetocan.currency.presentation.screen.HomeViewModel
 import com.russhwolf.settings.Settings
 import org.koin.dsl.module
@@ -17,10 +18,16 @@ val appModule = module {
     single<LocalCacheRepository> { Cache4kImpl() }
 //    single<LocalCacheRepository> { MongoImpl() }
 
+    single { platformCurrencyApiConfig() }
     single<CurrencyRepository> { CurrencyRepositoryImpl(database = getOrNull()) }
 
     single<PreferencesRepository> { PreferencesImpl(settings = get()) }
-    single<CurrencyApiService> { CurrencyApiServiceImpl(preferences = get()) }
+    single<CurrencyApiService> {
+        CurrencyApiServiceImpl(
+            preferences = get(),
+            config = get()
+        )
+    }
     factory {
         HomeViewModel(
             preferences = get(),

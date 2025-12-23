@@ -46,5 +46,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CurrencyApiEndpoint</key>
+	<string>https://api.currencyapi.com/v3/latest</string>
+	<key>CurrencyApiKey</key>
+	<string>$(CURRENCY_API_KEY)</string>
 </dict>
 </plist>
