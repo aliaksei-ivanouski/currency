@@ -9,7 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +53,7 @@ fun HomeHeader(
     status: RateStatus,
     source: RequestState<CurrencyRaw>,
     target: RequestState<CurrencyRaw>,
+    refreshState: RequestState<Unit>,
     amount: Double,
     onAmountChange: (Double) -> Unit,
     onSwitchClick: () -> Unit,
@@ -62,7 +69,11 @@ fun HomeHeader(
             .padding(all = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        RatesStatus(status, onRatesRefresh)
+        RatesStatus(
+            status = status,
+            refreshState = refreshState,
+            onRatesRefresh = onRatesRefresh
+        )
         Spacer(modifier = Modifier.height(24.dp))
         CurrencyInputs(
             source = source,
@@ -81,6 +92,7 @@ fun HomeHeader(
 @Composable
 fun RatesStatus(
     status: RateStatus,
+    refreshState: RequestState<Unit>,
     onRatesRefresh: () -> Unit
 ) {
     Row(
@@ -108,16 +120,34 @@ fun RatesStatus(
             }
         }
         
-        if (status == RateStatus.Stale) {
-            IconButton(onClick = onRatesRefresh) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(Res.drawable.refresh_ic),
-                    contentDescription = "Refresh Icon",
-                    tint = staleColor
+        when {
+            refreshState.isLoading() -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
                 )
             }
+            status == RateStatus.Stale || refreshState.isError() -> {
+                IconButton(onClick = onRatesRefresh) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(Res.drawable.refresh_ic),
+                        contentDescription = "Refresh Icon",
+                        tint = if (refreshState.isError()) staleColor else Color.White
+                    )
+                }
+            }
         }
+    }
+    if (refreshState.isError()) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = refreshState.getErrorMessage(),
+            color = staleColor,
+            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            textAlign = TextAlign.End
+        )
     }
 }
 
