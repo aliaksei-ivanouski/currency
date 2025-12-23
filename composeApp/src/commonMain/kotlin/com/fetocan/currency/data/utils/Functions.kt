@@ -26,6 +26,23 @@ fun convert(
     exchangeRate: Double
 ): Double = amount * exchangeRate
 
+fun roundDecimal(value: Double, decimals: Int = 2): Double {
+    val factor = 10.0.pow(decimals.coerceAtLeast(0))
+    return round(value * factor) / factor
+}
+
+fun formatDecimal(value: Double, decimals: Int = 2): String {
+    val rounded = roundDecimal(value, decimals)
+    val effectiveDecimals = decimals.coerceAtLeast(0)
+    if (effectiveDecimals == 0) return rounded.toLong().toString()
+
+    val parts = rounded.toString().split(".")
+    val whole = parts[0]
+    val fractionalSource = if (parts.size > 1) parts[1] else ""
+    val fractional = fractionalSource.padEnd(effectiveDecimals, '0').take(effectiveDecimals)
+    return "$whole.$fractional"
+}
+
 fun formatCompactNumber(value: Double): String {
     val absValue = abs(value)
     val digitsBeforeDecimal = if (absValue < 1.0) 1 else floor(log10(absValue)).toInt() + 1

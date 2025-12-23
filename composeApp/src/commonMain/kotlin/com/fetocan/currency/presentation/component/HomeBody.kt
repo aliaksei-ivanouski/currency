@@ -37,6 +37,8 @@ import com.fetocan.currency.data.utils.GetBebasFontFamily
 import com.fetocan.currency.data.utils.calculateExchangeRate
 import com.fetocan.currency.data.utils.convert
 import com.fetocan.currency.data.utils.formatCompactNumber
+import com.fetocan.currency.data.utils.formatDecimal
+import com.fetocan.currency.data.utils.roundDecimal
 
 @Composable
 fun HomeBody(
@@ -72,11 +74,15 @@ fun HomeBody(
             )
 
             AnimatedVisibility(visible = source.isSuccess() && target.isSuccess()) {
+                val sourceValue = source.getSuccessData().value
+                val targetValue = target.getSuccessData().value
+                val sourceToTarget = calculateExchangeRate(sourceValue, targetValue)
+                val targetToSource = calculateExchangeRate(targetValue, sourceValue)
                 Column {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = "1 ${(source.getSuccessData().code)} = " +
-                                "${target.getSuccessData().value} " +
+                                "${formatDecimal(sourceToTarget, 2)} " +
                                 target.getSuccessData().code,
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                         fontWeight = FontWeight.Bold,
@@ -89,7 +95,7 @@ fun HomeBody(
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = "1 ${(target.getSuccessData().code)} = " +
-                                "${source.getSuccessData().value} " +
+                                "${formatDecimal(targetToSource, 2)} " +
                                 source.getSuccessData().code,
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                         fontWeight = FontWeight.Bold,
@@ -118,9 +124,10 @@ fun HomeBody(
                         source = source.getSuccessData().value,
                         target = target.getSuccessData().value,
                     )
+                    val roundedRate = roundDecimal(exchangeRate, 2)
                     exchangedAmount = convert(
                         amount = amount,
-                        exchangeRate = exchangeRate
+                        exchangeRate = roundedRate
                     )
                 }
             },
