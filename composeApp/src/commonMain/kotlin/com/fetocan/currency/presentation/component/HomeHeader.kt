@@ -285,9 +285,14 @@ fun AmountInput(
         onValueChange = { newValue ->
             val filtered = newValue.filter { it.isDigit() || it == '.' }
             val decimalsAllowed = filtered.count { it == '.' } <= 1
-            if (decimalsAllowed) {
-                onAmountChange(filtered)
+            if (!decimalsAllowed) return@TextField
+
+            val normalized = when {
+                filtered.isEmpty() -> ""
+                filtered.startsWith("0") && filtered.length > 1 && filtered[1] != '.' -> filtered.trimStart('0').ifEmpty { "0" }
+                else -> filtered
             }
+            onAmountChange(normalized)
         },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White.copy(alpha = 0.05f),
