@@ -27,6 +27,7 @@ class HomeScreen: Screen {
         val allCurrencies by viewModel.allCurrencies.collectAsState()
         val sourceCurrency by viewModel.sourceCurrency
         val targetCurrency by viewModel.targetCurrency
+        val refreshState by viewModel.refreshState
 
         var amount by rememberSaveable { mutableStateOf(0.0) }
 
@@ -72,6 +73,7 @@ class HomeScreen: Screen {
                 status = rateStatus,
                 source = sourceCurrency,
                 target = targetCurrency,
+                refreshState = refreshState,
                 amount = amount,
                 onAmountChange = { amount = it },
                 onRatesRefresh = {

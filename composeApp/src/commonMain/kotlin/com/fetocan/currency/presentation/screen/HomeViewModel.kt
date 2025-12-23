@@ -11,6 +11,7 @@ import com.fetocan.currency.data.domain.CurrencyRepository
 import com.fetocan.currency.data.domain.PreferencesRepository
 import com.fetocan.currency.data.domain.model.RateStatus
 import com.fetocan.currency.data.domain.model.RequestState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 
 sealed class HomeUiEvent {
@@ -31,7 +33,8 @@ sealed class HomeUiEvent {
 class HomeViewModel(
     private val preferences: PreferencesRepository,
     private val repository: CurrencyRepository,
-    private val api: CurrencyApiService
+    private val api: CurrencyApiService,
+    private val ioDispatcher: CoroutineDispatcher
 ) : ScreenModel {
     private var _rateStatus: MutableState<RateStatus> =
         mutableStateOf(RateStatus.Idle)
@@ -48,6 +51,10 @@ class HomeViewModel(
         mutableStateOf(RequestState.Idle)
     val targetCurrency: State<RequestState<CurrencyRaw>> = _targetCurrency
 
+    private var _refreshState: MutableState<RequestState<Unit>> =
+        mutableStateOf(RequestState.Idle)
+    val refreshState: State<RequestState<Unit>> = _refreshState
+
     init {
         screenModelScope.launch {
             fetchNewRates()
@@ -59,6 +66,7 @@ class HomeViewModel(
     fun sendEvent(event: HomeUiEvent) {
         when (event) {
             is HomeUiEvent.RefreshRates -> {
+                if (refreshState.value.isLoading()) return
                 screenModelScope.launch {
                     fetchNewRates()
                 }
@@ -116,52 +124,45 @@ class HomeViewModel(
     }
 
     private suspend fun fetchNewRates() {
+        _refreshState.value = RequestState.Loading
         try {
-            repository.getAllCurrency()
-                .takeIf { it.isSuccess() }
-                ?.getSuccessData()
-                ?.takeIf { it.isNotEmpty() }
-                ?.also { currencyRaw ->
-                    println("HomeViewModel: DATABASE IS FULL")
-                    _allCurrencies.value = currencyRaw
-                    if (!preferences.isDataFresh(Clock.System.now().toEpochMilliseconds())) {
-                        println("HomeViewModel: DATA NOT FRESH")
-                        cacheTheData()
-                    } else {
-                        println("HomeViewModel: DATA IS FRESH")
-                    }
-                } ?: cacheTheData()
-            getRateStatus()
+            val (currencies, freshStatus) = withContext(ioDispatcher) {
+                val cachedCurrencies = when (val cachedState = repository.getAllCurrency()) {
+                    is RequestState.Success -> cachedState.data
+                    is RequestState.Error -> throw IllegalStateException(cachedState.message)
+                    else -> emptyList()
+                }
+                val now = Clock.System.now().toEpochMilliseconds()
+                val data = if (cachedCurrencies.isNotEmpty()) {
+                    val cacheFresh = preferences.isDataFresh(now)
+                    if (cacheFresh) cachedCurrencies else cacheLatestRates()
+                } else {
+                    cacheLatestRates()
+                }
+                val status = if (preferences.isDataFresh(Clock.System.now().toEpochMilliseconds()))
+                    RateStatus.Fresh else RateStatus.Stale
+                data to status
+            }
+            _allCurrencies.value = currencies
+            _rateStatus.value = freshStatus
+            _refreshState.value = RequestState.Success(Unit)
         } catch (e: Exception) {
             println(e.message)
+            _refreshState.value = RequestState.Error(e.message ?: "Unable to refresh currency rates.")
         }
     }
 
-    private suspend fun cacheTheData() {
-        println("HomeViewModel: DATABASE NEEDS DATA")
+    private suspend fun cacheLatestRates(): List<CurrencyRaw> {
         val fetchedData = api.getLatestExchangeRates()
         if (fetchedData.isSuccess()) {
+            val mappedCurrencies = fetchedData.getSuccessData().map { CurrencyRaw(it.code, it.value) }
             repository.clearCurrencies()
-            fetchedData.getSuccessData().forEach {
-                println("HomeViewModel: ADDING ${it.code}")
-                repository.insertCurrency(CurrencyRaw(it.code, it.value))
-            }
-            println("HomeViewModel: UPDATING ALL CURRENCIES")
-            _allCurrencies.value =
-                fetchedData.getSuccessData().map { CurrencyRaw(it.code, it.value) }
+            repository.insertCurrencies(mappedCurrencies)
+            return mappedCurrencies
         } else if (fetchedData.isError()) {
-            println("HomeViewModel: FETCHING FAILED ${fetchedData.getErrorMessage()}")
+            throw IllegalStateException(fetchedData.getErrorMessage())
         }
-    }
-
-    private suspend fun getRateStatus() {
-        _rateStatus.value = if (preferences.isDataFresh(
-                currentTimestamp = Clock.System.now().toEpochMilliseconds()
-            )
-        ) RateStatus.Fresh
-        else RateStatus.Stale
-
-        println("Status ${_rateStatus.value.title}")
+        return emptyList()
     }
 
     private fun switchCurrencies() {
