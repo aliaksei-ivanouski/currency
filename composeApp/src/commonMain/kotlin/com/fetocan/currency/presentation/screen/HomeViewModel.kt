@@ -2,7 +2,6 @@ package com.fetocan.currency.presentation.screen
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -14,7 +13,11 @@ import com.fetocan.currency.data.domain.model.RateStatus
 import com.fetocan.currency.data.domain.model.RequestState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -34,8 +37,8 @@ class HomeViewModel(
         mutableStateOf(RateStatus.Idle)
     val rateStatus: State<RateStatus> = _rateStatus
 
-    val _allCurrencies = mutableStateListOf<CurrencyRaw>()
-    val allCurrencies: List<CurrencyRaw> = _allCurrencies
+    private val _allCurrencies = MutableStateFlow<List<CurrencyRaw>>(emptyList())
+    val allCurrencies: StateFlow<List<CurrencyRaw>> = _allCurrencies.asStateFlow()
 
     private var _sourceCurrency: MutableState<RequestState<CurrencyRaw>> =
         mutableStateOf(RequestState.Idle)
@@ -74,23 +77,41 @@ class HomeViewModel(
 
     private fun readSourceCurrency() {
         screenModelScope.launch(Dispatchers.Main) {
-            preferences.readSourceCurrencyCode().collectLatest { currencyCode ->
-                val selectedCurrency = _allCurrencies.find { it.code == currencyCode.name }
-                _sourceCurrency.value = if (selectedCurrency != null)
-                    RequestState.Success(data = selectedCurrency) else
+            preferences.readSourceCurrencyCode()
+                .combine(_allCurrencies) { currencyCode, currencies ->
+                    Pair(currencyCode, currencies)
+                }
+                .collectLatest { (currencyCode, currencies) ->
+                    if (currencies.isEmpty()) {
+                        _sourceCurrency.value = RequestState.Loading
+                        return@collectLatest
+                    }
+                    val selectedCurrency = currencies.find { it.code == currencyCode.name }
+                    _sourceCurrency.value = if (selectedCurrency != null)
+                        RequestState.Success(data = selectedCurrency)
+                    else
                         RequestState.Error(message = "Couldn't find the selected currency")
-            }
+                }
         }
     }
 
     private fun readTargetCurrency() {
         screenModelScope.launch(Dispatchers.Main) {
-            preferences.readTargetCurrencyCode().collectLatest { currencyCode ->
-                val selectedCurrency = _allCurrencies.find { it.code == currencyCode.name }
-                _targetCurrency.value = if (selectedCurrency != null)
-                    RequestState.Success(data = selectedCurrency) else
-                    RequestState.Error(message = "Couldn't find the selected currency")
-            }
+            preferences.readTargetCurrencyCode()
+                .combine(_allCurrencies) { currencyCode, currencies ->
+                    Pair(currencyCode, currencies)
+                }
+                .collectLatest { (currencyCode, currencies) ->
+                    if (currencies.isEmpty()) {
+                        _targetCurrency.value = RequestState.Loading
+                        return@collectLatest
+                    }
+                    val selectedCurrency = currencies.find { it.code == currencyCode.name }
+                    _targetCurrency.value = if (selectedCurrency != null)
+                        RequestState.Success(data = selectedCurrency)
+                    else
+                        RequestState.Error(message = "Couldn't find the selected currency")
+                }
         }
     }
 
@@ -102,8 +123,7 @@ class HomeViewModel(
                 ?.takeIf { it.isNotEmpty() }
                 ?.also { currencyRaw ->
                     println("HomeViewModel: DATABASE IS FULL")
-                    _allCurrencies.clear()
-                    _allCurrencies.addAll(currencyRaw)
+                    _allCurrencies.value = currencyRaw
                     if (!preferences.isDataFresh(Clock.System.now().toEpochMilliseconds())) {
                         println("HomeViewModel: DATA NOT FRESH")
                         cacheTheData()
@@ -127,10 +147,8 @@ class HomeViewModel(
                 repository.insertCurrency(CurrencyRaw(it.code, it.value))
             }
             println("HomeViewModel: UPDATING ALL CURRENCIES")
-            _allCurrencies.clear()
-            _allCurrencies.addAll(
+            _allCurrencies.value =
                 fetchedData.getSuccessData().map { CurrencyRaw(it.code, it.value) }
-            )
         } else if (fetchedData.isError()) {
             println("HomeViewModel: FETCHING FAILED ${fetchedData.getErrorMessage()}")
         }
