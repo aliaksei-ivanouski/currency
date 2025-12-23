@@ -1,10 +1,10 @@
 CREATE TABLE Currency (
-    code TEXT NOT NULL,
+    code TEXT NOT NULL PRIMARY KEY,
     value REAL NOT NULL
 );
 
 insertCurrency:
-INSERT INTO Currency(code, value)
+INSERT OR REPLACE INTO Currency(code, value)
 VALUES(?, ?);
 
 selectAllCurrencies:
