@@ -36,6 +36,7 @@ import com.fetocan.currency.data.utils.DoubleConverter
 import com.fetocan.currency.data.utils.GetBebasFontFamily
 import com.fetocan.currency.data.utils.calculateExchangeRate
 import com.fetocan.currency.data.utils.convert
+import com.fetocan.currency.data.utils.formatCompactNumber
 
 @Composable
 fun HomeBody(
@@ -60,9 +61,10 @@ fun HomeBody(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
         ) {
+            val formattedAmount = formatCompactNumber(animatedExchangeAmount)
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "${(animatedExchangeAmount * 100).toLong() / 100.0}",
+                text = formattedAmount,
                 fontSize = 60.sp,
                 fontFamily = GetBebasFontFamily(),
                 color = if (isSystemInDarkTheme()) Color.White else Color.Black,
