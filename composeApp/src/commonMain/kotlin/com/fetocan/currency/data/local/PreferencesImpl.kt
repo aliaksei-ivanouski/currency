@@ -10,22 +10,11 @@ import com.russhwolf.settings.coroutines.toFlowSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalSettingsApi::class)
 class PreferencesImpl(
     private val settings: Settings
 ): PreferencesRepository {
-    
-    companion object {
-        const val TIMESTAMP_KEY = "lastUpdated"
-        const val SOURCE_CURRENCY_KEY = "sourceCurrency"
-        const val TARGET_CURRENCY_KEY = "targetCurrency"
-
-        val DEFAULT_SOURCE_CURRENCY = CurrencyCode.USD.name
-        val DEFAULT_TARGET_CURRENCY = CurrencyCode.EUR.name
-    }
     
     private val flowSettings: FlowSettings = (settings as ObservableSettings).toFlowSettings()
     
@@ -42,20 +31,12 @@ class PreferencesImpl(
             defaultValue = 0L
         )
         
-        return if (savedTimestamp != 0L) {
-            val currentInstant = Instant.fromEpochMilliseconds(currentTimestamp)
-            val savedInstant = Instant.fromEpochMilliseconds(savedTimestamp)
-            
-            val currentDateTime = currentInstant
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-            val savedDateTime = savedInstant
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-            
-            val dayDifference = currentDateTime.date.dayOfYear - savedDateTime.date.dayOfYear
-            
-            println("Difference: $dayDifference")
-            dayDifference < 1
-        } else false
+        if (savedTimestamp == 0L) return false
+
+        val elapsedMillis = currentTimestamp - savedTimestamp
+        if (elapsedMillis < 0) return false
+
+        return elapsedMillis < DATA_FRESHNESS_WINDOW_MILLIS
     }
 
     override suspend fun saveSourceCurrencyCode(code: String) {
@@ -84,6 +65,17 @@ class PreferencesImpl(
             key = TARGET_CURRENCY_KEY,
             defaultValue = DEFAULT_TARGET_CURRENCY
         ).map { CurrencyCode.valueOf(it) }
+    }
+
+    companion object {
+        const val TIMESTAMP_KEY = "lastUpdated"
+        const val SOURCE_CURRENCY_KEY = "sourceCurrency"
+        const val TARGET_CURRENCY_KEY = "targetCurrency"
+
+        private const val DATA_FRESHNESS_WINDOW_MILLIS = 24 * 60 * 60 * 1000
+
+        val DEFAULT_SOURCE_CURRENCY = CurrencyCode.USD.name
+        val DEFAULT_TARGET_CURRENCY = CurrencyCode.EUR.name
     }
 
 }
