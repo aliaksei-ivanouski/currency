@@ -29,12 +29,7 @@ val appModule = module {
     single<CoroutineDispatcher>(named(DISPATCHER_IO)) { Dispatchers.Default }
 
     single<PreferencesRepository> { PreferencesImpl(settings = get()) }
-    single<CurrencyApiService> {
-        CurrencyApiServiceImpl(
-            preferences = get(),
-            config = get()
-        )
-    }
+    single<CurrencyApiService> { CurrencyApiServiceImpl(config = get()) }
     factory {
         HomeViewModel(
             preferences = get(),

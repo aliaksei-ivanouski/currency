@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 sealed class RequestState<out T> {
     data object Idle : RequestState<Nothing>()
     data object Loading : RequestState<Nothing>()
-    data class Success<out T>(val data: T) : RequestState<T>()
+    data class Success<out T>(val data: T, val meta: MetaData? = null) : RequestState<T>()
     data class Error(val message: String) : RequestState<Nothing>()
 
     fun isLoading(): Boolean = this is Loading
@@ -26,6 +26,7 @@ sealed class RequestState<out T> {
     fun isSuccess(): Boolean = this is Success
 
     fun getSuccessData() = (this as Success).data
+    fun getSuccessMeta() = (this as Success).meta
     fun getErrorMessage() = (this as Error).message
 }
 

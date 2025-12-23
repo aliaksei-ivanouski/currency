@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PreferencesRepository {
     suspend fun saveLastUpdated(lastUpdated: String)
+    fun getLastUpdated(): String?
     suspend fun isDataFresh(currentTimestamp: Long): Boolean
     suspend fun saveSourceCurrencyCode(code: String)
     suspend fun saveTargetCurrencyCode(code: String)
