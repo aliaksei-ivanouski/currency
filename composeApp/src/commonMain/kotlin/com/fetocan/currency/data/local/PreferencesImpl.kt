@@ -25,6 +25,11 @@ class PreferencesImpl(
         )
     }
 
+    override fun getLastUpdated(): String? {
+        val timestamp = settings.getLong(TIMESTAMP_KEY, 0L)
+        return if (timestamp != 0L) Instant.fromEpochMilliseconds(timestamp).toString() else null
+    }
+
     override suspend fun isDataFresh(currentTimestamp: Long): Boolean {
         val savedTimestamp = flowSettings.getLong(
             key = TIMESTAMP_KEY,

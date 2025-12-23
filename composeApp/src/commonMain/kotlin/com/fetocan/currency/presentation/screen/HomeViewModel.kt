@@ -133,12 +133,14 @@ class HomeViewModel(
                     else -> emptyList()
                 }
                 val now = Clock.System.now().toEpochMilliseconds()
-                val data = if (cachedCurrencies.isNotEmpty()) {
+                val (data, lastUpdated) = if (cachedCurrencies.isNotEmpty()) {
                     val cacheFresh = preferences.isDataFresh(now)
-                    if (cacheFresh) cachedCurrencies else cacheLatestRates()
+                    if (cacheFresh) cachedCurrencies to preferences.getLastUpdated()
+                    else cacheLatestRates()
                 } else {
                     cacheLatestRates()
                 }
+                lastUpdated?.let { preferences.saveLastUpdated(it) }
                 val status = if (preferences.isDataFresh(Clock.System.now().toEpochMilliseconds()))
                     RateStatus.Fresh else RateStatus.Stale
                 data to status
@@ -152,17 +154,17 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun cacheLatestRates(): List<CurrencyRaw> {
+    private suspend fun cacheLatestRates(): Pair<List<CurrencyRaw>, String?> {
         val fetchedData = api.getLatestExchangeRates()
         if (fetchedData.isSuccess()) {
             val mappedCurrencies = fetchedData.getSuccessData().map { CurrencyRaw(it.code, it.value) }
             repository.clearCurrencies()
             repository.insertCurrencies(mappedCurrencies)
-            return mappedCurrencies
+            return mappedCurrencies to fetchedData.getSuccessMeta()?.lastUpdatedAt
         } else if (fetchedData.isError()) {
             throw IllegalStateException(fetchedData.getErrorMessage())
         }
-        return emptyList()
+        return emptyList<CurrencyRaw>() to null
     }
 
     private fun switchCurrencies() {

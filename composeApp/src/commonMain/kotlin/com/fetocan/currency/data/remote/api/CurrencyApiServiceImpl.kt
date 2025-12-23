@@ -1,7 +1,6 @@
 package com.fetocan.currency.data.remote.api
 
 import com.fetocan.currency.data.domain.CurrencyApiService
-import com.fetocan.currency.data.domain.PreferencesRepository
 import com.fetocan.currency.data.domain.model.ApiResponse
 import com.fetocan.currency.data.domain.model.Currency
 import com.fetocan.currency.data.domain.model.CurrencyCode
@@ -18,7 +17,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class CurrencyApiServiceImpl(
-    private val preferences: PreferencesRepository,
     private val config: CurrencyApiConfig
 ) : CurrencyApiService {
 
@@ -59,10 +57,10 @@ class CurrencyApiServiceImpl(
                         availableCurrencyCodes.contains(currency.code)
                     }
                 
-                val lastUpdated = apiResponse.meta.lastUpdatedAt
-                preferences.saveLastUpdated(lastUpdated)
-                
-                RequestState.Success(data = availableCurrencies)
+                RequestState.Success(
+                    data = availableCurrencies,
+                    meta = apiResponse.meta
+                )
             } else {
                 println("HTTP error code: ${response.status.value}")
                 RequestState.Error(message = "HTTP error code: ${response.status.value}")
