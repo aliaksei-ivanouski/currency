@@ -12,3 +12,12 @@ This is a Kotlin Multiplatform project targeting Android, iOS.
 
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+
+## Configuration
+
+This project expects a CurrencyAPI key to be supplied per developer machine:
+
+- Create or update `local.properties` (not checked in) with `currencyApiKey=YOUR_KEY`.
+- Open `iosApp/Configuration/Config.xcconfig` and set `CURRENCY_API_KEY=YOUR_KEY` (Xcode reads this value into `Info.plist`).
+
+Both Android and iOS builds will fail fast if the key is missing so secrets never live inside the repository.
