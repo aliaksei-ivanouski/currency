@@ -42,6 +42,7 @@ import com.fetocan.currency.data.ui.staleColor
 import com.fetocan.currency.data.utils.displayCurrentDateTime
 import com.fetocan.currency.getPlatform
 import currency.composeapp.generated.resources.Res
+import currency.composeapp.generated.resources.close_ic
 import currency.composeapp.generated.resources.exchange_illustration
 import currency.composeapp.generated.resources.refresh_ic
 import currency.composeapp.generated.resources.switch_ic
@@ -312,6 +313,22 @@ fun AmountInput(
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         ),
+        leadingIcon = {
+            if (amountText.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(40.dp))
+            }
+        },
+        trailingIcon = {
+            if (amountText.isNotEmpty()) {
+                IconButton(onClick = { onAmountChange("0") }) {
+                    Icon(
+                        painter = painterResource(Res.drawable.close_ic),
+                        contentDescription = "Clear amount",
+                        tint = Color.White
+                    )
+                }
+            }
+        },
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Decimal
