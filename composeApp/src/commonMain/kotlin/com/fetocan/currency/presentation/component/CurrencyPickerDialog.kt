@@ -41,13 +41,20 @@ fun CurrencyPickerDialog(
     onConfirmClick: (CurrencyCode) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val allCurrencies = remember {
-        mutableStateListOf<CurrencyRaw>().apply { addAll(currencies) }
-    }
-
     var searchQuery by remember { mutableStateOf("") }
     var selectedCurrencyCode by remember(currencyType) {
         mutableStateOf(currencyType.code)
+    }
+
+    val filteredCurrencies by remember(searchQuery, currencies) {
+        mutableStateOf(
+            if (searchQuery.isBlank()) {
+                currencies
+            } else {
+                val query = searchQuery.uppercase()
+                currencies.filter { it.code.contains(query) }
+            }
+        )
     }
 
     AlertDialog(
@@ -69,18 +76,7 @@ fun CurrencyPickerDialog(
                         .clip(RoundedCornerShape(size = 99.dp)),
                     value = searchQuery,
                     onValueChange = { query ->
-                        searchQuery = query.uppercase()
-
-                        if (query.isNotEmpty()) {
-                            val filteredCurrencies = allCurrencies.filter {
-                                it.code.contains(query.uppercase())
-                            }
-                            allCurrencies.clear()
-                            allCurrencies.addAll(filteredCurrencies)
-                        } else {
-                            allCurrencies.clear()
-                            allCurrencies.addAll(currencies)
-                        }
+                        searchQuery = query
                     },
                     placeholder = {
                         Text(
@@ -109,7 +105,7 @@ fun CurrencyPickerDialog(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 AnimatedContent(
-                    targetState = allCurrencies
+                    targetState = filteredCurrencies
                 ) { availableCurrencies ->
                     if (availableCurrencies.isNotEmpty()) {
                         LazyColumn(
