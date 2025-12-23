@@ -52,7 +52,7 @@ fun CurrencyPickerDialog(
                 currencies
             } else {
                 val query = searchQuery.uppercase()
-                currencies.filter { it.code.contains(query) }
+                currencies.filter { it.code.startsWith(query) }
             }
         )
     }
@@ -121,7 +121,10 @@ fun CurrencyPickerDialog(
                                 CurrencyCodePickerView(
                                     code = CurrencyCode.valueOf(currency.code),
                                     isSelected = selectedCurrencyCode.name == currency.code,
-                                    onSelect = { selectedCurrencyCode = it }
+                                    onSelect = {
+                                        selectedCurrencyCode = it
+                                        onConfirmClick(it)
+                                    }
                                 )
                             }
                         }
@@ -140,15 +143,6 @@ fun CurrencyPickerDialog(
                 )
             }
         },
-        confirmButton = {
-            TextButton(onClick = {
-                onConfirmClick(selectedCurrencyCode)
-            }) {
-                Text(
-                    text = "Confirm",
-                    color = primaryColor
-                )
-            }
-        }
+        confirmButton = { }
     )
 }
