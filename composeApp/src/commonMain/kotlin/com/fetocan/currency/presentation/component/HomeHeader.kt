@@ -45,7 +45,6 @@ import currency.composeapp.generated.resources.Res
 import currency.composeapp.generated.resources.exchange_illustration
 import currency.composeapp.generated.resources.refresh_ic
 import currency.composeapp.generated.resources.switch_ic
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -54,8 +53,8 @@ fun HomeHeader(
     source: RequestState<CurrencyRaw>,
     target: RequestState<CurrencyRaw>,
     refreshState: RequestState<Unit>,
-    amount: Double,
-    onAmountChange: (Double) -> Unit,
+    amountText: String,
+    onAmountChange: (String) -> Unit,
     onSwitchClick: () -> Unit,
     onRatesRefresh: () -> Unit,
     onCurrencyTypeSelect: (CurrencyType) -> Unit
@@ -83,7 +82,7 @@ fun HomeHeader(
         )
         Spacer(modifier = Modifier.height(24.dp))
         AmountInput(
-            amount = amount,
+            amountText = amountText,
             onAmountChange = onAmountChange
         )
     }
@@ -273,8 +272,8 @@ fun RowScope.CurrencyView(
 
 @Composable
 fun AmountInput(
-    amount: Double,
-    onAmountChange: (Double) -> Unit
+    amountText: String,
+    onAmountChange: (String) -> Unit
 ) {
     TextField(
         modifier = Modifier
@@ -282,8 +281,14 @@ fun AmountInput(
             .clip(RoundedCornerShape(size = 8.dp))
             .animateContentSize()
             .height(54.dp),
-        value = "$amount",
-        onValueChange = { onAmountChange(it.toDouble()) },
+        value = amountText,
+        onValueChange = { newValue ->
+            val filtered = newValue.filter { it.isDigit() || it == '.' }
+            val decimalsAllowed = filtered.count { it == '.' } <= 1
+            if (decimalsAllowed) {
+                onAmountChange(filtered)
+            }
+        },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White.copy(alpha = 0.05f),
             unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
