@@ -1,6 +1,7 @@
 package com.fetocan.currency.presentation.component
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,7 +18,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +40,12 @@ fun CurrencyPickerDialog(
     onConfirmClick: (CurrencyCode) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val dialogBackground = if (isDark) Color(0xFF1E2433) else Color.White
+    val dialogTextColor = if (isDark) Color(0xFFF6F1E9) else textColor
+    val fieldContainerColor = if (isDark) Color(0xFF2A3145) else textColor.copy(alpha = 0.01f)
+    val placeholderColor = dialogTextColor.copy(alpha = 0.5f)
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedCurrencyCode by remember(currencyType) {
         mutableStateOf(currencyType.code)
@@ -58,11 +63,11 @@ fun CurrencyPickerDialog(
     }
 
     AlertDialog(
-        containerColor = containerColor,
+        containerColor = dialogBackground,
         title = {
             Text(
                 text = "Select a currency",
-                color = textColor
+                color = dialogTextColor
             )
         },
         text = {
@@ -81,24 +86,24 @@ fun CurrencyPickerDialog(
                     placeholder = {
                         Text(
                             text = "Search here",
-                            color = textColor.copy(alpha = 0.38f),
+                            color = placeholderColor,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                         )
                     },
                     singleLine = true,
                     textStyle = TextStyle(
-                        color = textColor,
+                        color = dialogTextColor,
                         fontSize = MaterialTheme.typography.bodySmall.fontSize
                     ),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = textColor.copy(alpha = 0.01f),
-                        unfocusedContainerColor = textColor.copy(alpha = 0.01f),
-                        disabledContainerColor = textColor.copy(alpha = 0.01f),
-                        errorContainerColor = textColor.copy(alpha = 0.01f),
+                        focusedContainerColor = fieldContainerColor,
+                        unfocusedContainerColor = fieldContainerColor,
+                        disabledContainerColor = fieldContainerColor,
+                        errorContainerColor = fieldContainerColor,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent,
-                        cursorColor = textColor
+                        cursorColor = dialogTextColor
                     )
                 )
 
@@ -139,10 +144,10 @@ fun CurrencyPickerDialog(
             TextButton(onClick = onDismiss) {
                 Text(
                     text = "Cancel",
-                    color = MaterialTheme.colorScheme.outline
+                    color = dialogTextColor.copy(alpha = 0.7f)
                 )
             }
         },
-        confirmButton = { }
+        confirmButton = {}
     )
 }

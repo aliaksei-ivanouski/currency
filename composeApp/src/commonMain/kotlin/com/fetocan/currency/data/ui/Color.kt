@@ -226,20 +226,20 @@ val staleColor = Color(0XFFFF9E44)
 
 val primaryColor
     @Composable
-    get() = if (isSystemInDarkTheme()) Color(0XFF86A8FC)
-    else Color(0XFF283556)
+    get() = if (isSystemInDarkTheme()) Color(0xFFFFB86C)
+    else Color(0xFFFF7A18)
 
 val headerColor
     @Composable
-    get() = if (isSystemInDarkTheme()) Color(0XFF0C0C0C)
-    else Color(0XFF283556)
+    get() = if (isSystemInDarkTheme()) Color(0xFF080B13)
+    else Color(0xFF101728)
 
 val surfaceColor
     @Composable
-    get() = if (isSystemInDarkTheme()) Color(0XFF161616)
-    else Color(0XFFFFFFFF)
+    get() = if (isSystemInDarkTheme()) Color(0xFF0F111A)
+    else Color(0xFFF7F3ED)
 
 val textColor
     @Composable
-    get() = if (isSystemInDarkTheme()) Color(0XFFFFFFFF)
-    else Color(0XFF000000)
+    get() = if (isSystemInDarkTheme()) Color(0xFFF5EEE0)
+    else Color(0xFF1C1C1C)
