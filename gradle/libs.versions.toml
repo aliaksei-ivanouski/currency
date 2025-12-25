@@ -25,6 +25,7 @@ stately-common = "2.1.0"
 realm-plugin = "2.1.0"
 reactivecircus-cache4k = "0.14.0"
 sqlDelight = "2.2.1"
+kotlinx-bignum = "0.3.10"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -67,6 +68,7 @@ stately-common = { module = "co.touchlab:stately-common", version.ref = "stately
 
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatform-settings" }
+kotlinx-bignum = { module = "com.ionspin.kotlin:bignum", version.ref = "kotlinx-bignum" }
 
 #mongodb-realm = { module = "io.realm.kotlin:library-base", version.ref = "mongodb-realm" }
 

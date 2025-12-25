@@ -88,10 +88,15 @@ kotlin {
             implementation(libs.sql.coroutines.extensions)
 
             implementation(libs.reactivecircus.cache4k)
+            implementation(libs.kotlinx.bignum)
 
             implementation(libs.kotlin.coroutines)
             implementation(libs.stately.common)
 //            implementation(libs.mongodb.realm)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
 
         iosMain.dependencies {

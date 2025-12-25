@@ -2,6 +2,9 @@ package com.fetocan.currency.data.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.DecimalMode
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import currency.composeapp.generated.resources.Res
 import currency.composeapp.generated.resources.bebas_neue_regular
 import kotlin.time.Clock
@@ -16,22 +19,47 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.roundToInt
 
+private val CalculationMode = DecimalMode(
+    decimalPrecision = 28,
+    roundingMode = RoundingMode.ROUND_HALF_TO_EVEN,
+    scale = 12
+)
+
 fun calculateExchangeRate(
     source: Double,
     target: Double
-): Double = target / source
+): BigDecimal {
+    val sourceDecimal = BigDecimal.fromDouble(source.roundForRate())
+    val targetDecimal = BigDecimal.fromDouble(target.roundForRate())
+    return targetDecimal.divide(sourceDecimal, CalculationMode)
+}
 
 fun convert(
     amount: Double,
-    exchangeRate: Double
-): Double = amount * exchangeRate
+    exchangeRate: BigDecimal
+): BigDecimal {
+    val amountDecimal = BigDecimal.fromDouble(amount)
+    return amountDecimal.multiply(exchangeRate, CalculationMode)
+}
+
+fun formatDecimal(value: BigDecimal, decimals: Int = 2): String =
+    formatDecimal(value.doubleValue(exactRequired = false), decimals)
 
 fun roundDecimal(value: Double, decimals: Int = 2): Double {
     val factor = 10.0.pow(decimals.coerceAtLeast(0))
     return round(value * factor) / factor
 }
 
-fun formatDecimal(value: Double, decimals: Int = 2): String {
+private fun Double.roundForRate(): Double {
+    val decimals = when {
+        this >= 1.0 -> 2
+        this >= 0.1 -> 4
+        else -> 6
+    }
+    return roundDecimal(this, decimals)
+}
+
+private fun formatDecimal(value: Double, decimals: Int = 2): String {
     val rounded = roundDecimal(value, decimals)
     val effectiveDecimals = decimals.coerceAtLeast(0)
     if (effectiveDecimals == 0) return rounded.toLong().toString()

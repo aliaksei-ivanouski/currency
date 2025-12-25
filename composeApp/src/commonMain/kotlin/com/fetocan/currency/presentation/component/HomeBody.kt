@@ -21,7 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +39,7 @@ import com.fetocan.currency.data.utils.convert
 import com.fetocan.currency.data.utils.formatCompactNumber
 import com.fetocan.currency.data.utils.formatDecimal
 import com.fetocan.currency.data.utils.roundDecimal
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 
 @Composable
 fun HomeBody(
@@ -46,9 +47,9 @@ fun HomeBody(
     target: RequestState<CurrencyRaw>,
     amount: Double
 ) {
-    var exchangedAmount by rememberSaveable { mutableStateOf(0.0) }
+    var exchangedAmount by remember { mutableStateOf(BigDecimal.ZERO) }
     val animatedExchangeAmount by animateValueAsState(
-        targetValue = exchangedAmount,
+        targetValue = exchangedAmount.doubleValue(exactRequired = false),
         animationSpec = tween(durationMillis = 300),
         typeConverter = DoubleConverter()
     )
@@ -76,8 +77,14 @@ fun HomeBody(
             AnimatedVisibility(visible = source.isSuccess() && target.isSuccess()) {
                 val sourceValue = source.getSuccessData().value
                 val targetValue = target.getSuccessData().value
-                val sourceToTarget = calculateExchangeRate(sourceValue, targetValue)
-                val targetToSource = calculateExchangeRate(targetValue, sourceValue)
+                val sourceToTargetExact = calculateExchangeRate(sourceValue, targetValue)
+                val targetToSourceExact = calculateExchangeRate(targetValue, sourceValue)
+                val sourceToTarget = BigDecimal.fromDouble(
+                    roundDecimal(sourceToTargetExact.doubleValue(false), 2)
+                )
+                val targetToSource = BigDecimal.fromDouble(
+                    roundDecimal(targetToSourceExact.doubleValue(false), 2)
+                )
                 Column {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
@@ -124,10 +131,9 @@ fun HomeBody(
                         source = source.getSuccessData().value,
                         target = target.getSuccessData().value,
                     )
-                    val roundedRate = roundDecimal(exchangeRate, 2)
                     exchangedAmount = convert(
                         amount = amount,
-                        exchangeRate = roundedRate
+                        exchangeRate = exchangeRate
                     )
                 }
             },
