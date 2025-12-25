@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 import currency.composeapp.generated.resources.Res
 import currency.composeapp.generated.resources.bebas_neue_regular
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -105,7 +105,7 @@ fun displayCurrentDateTime(): String {
     val currentTimestamp = Clock.System.now()
     val date = currentTimestamp.toLocalDateTime(TimeZone.currentSystemDefault())
     
-    val dayOfMonth = date.dayOfMonth
+    val dayOfMonth = date.day
     val month = date.month.toString().lowercase()
         .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     

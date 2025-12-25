@@ -254,17 +254,16 @@ fun RowScope.CurrencyView(
         ) {
             currency.DisplayResult(
                 onSuccess = { data ->
-                Icon(
+                    val currencyCode = remember(data.code) { CurrencyCode.valueOf(data.code) }
+                    Icon(
                         modifier = Modifier.size(24.dp),
-                        painter = painterResource(
-                            CurrencyCode.valueOf(data.code).flag
-                        ),
+                        painter = painterResource(currencyCode.flag),
                         tint = Color.Unspecified,
                         contentDescription = "Country Flag"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = CurrencyCode.valueOf(data.code).name,
+                        text = currencyCode.name,
                         fontWeight = FontWeight.Bold,
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
                         color = Color.White
